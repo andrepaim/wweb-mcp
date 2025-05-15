@@ -136,6 +136,10 @@ async function startMcpSseServer(
     transport = new SSEServerTransport('/message', res);
     await server.connect(transport);
   });
+  app.get('/status', async (_req, res) => {
+    logger.info('Received status request');
+    res.status(200).json({ status: 'ok' });
+  });
 
   app.post('/message', async (req, res) => {
     await transport?.handlePostMessage(req, res);
