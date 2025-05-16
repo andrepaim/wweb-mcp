@@ -104,12 +104,20 @@ export function createWhatsAppClient(config: WhatsAppConfig = {}): Client {
     logger.warn('Client was disconnected:', reason);
   });
 
+  client.on('message_create', async (message: Message) => {
+    const contact = await message.getContact();
+    if (message.id.fromMe) {
+      logger.debug(`Own message: ${contact.pushname} (${contact.number}): ${message.body}`);
+      client.emit('message', message);
+    }
+  });
+
   // Handle incoming messages
   client.on('message', async (message: Message) => {
     const contact = await message.getContact();
     logger.debug(`${contact.pushname} (${contact.number}): ${message.body}`);
 
-    // Process webhook if configured
+    // Process webhook if configured and if the message is from the bot
     if (webhookConfig) {
       // Check filters
       const isGroup = message.from.includes('@g.us');
